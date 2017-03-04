@@ -1,28 +1,17 @@
 ---
-- name: Download daemonize archive.
-  get_url:
-    url: "https://github.com/bmc/daemonize/archive/release-{{ daemonize_version }}.tar.gz"
-    dest: "{{ workspace }}/daemonize-{{ daemonize_version }}.tar.gz"
+- include: tasks/oah-install.yml
+  when: oah_command == "install"
 
-- name: Expand daemonize archive.
-  command: >
-    tar -zxf {{ workspace }}/daemonize-{{ daemonize_version }}.tar.gz
-    chdir={{ workspace }}
-    creates={{ workspace }}/daemonize-release-{{ daemonize_version }}/INSTALL
+- include: tasks/oah-update.yml
+  when: oah_command == "update"
 
-- name: Check if daemonize is installed.
-  command: which daemonize
-  changed_when: false
-  failed_when: false
-  register: daemonize_installed
+- include: tasks/oah-remove.yml
+  when: oah_command == "remove"
 
-- name: Build daemonize.
-  command: >
-    {{ item }}
-    chdir={{ workspace }}/daemonize-release-{{ daemonize_version }}
-  when: daemonize_installed|failed
-  with_items:
-    - ./configure
-    - "make prefix={{ daemonize_install_path }}"
-    - "make prefix={{ daemonize_install_path }} install"
-  sudo: yes
+- include: tasks/oah-reset.yml
+  when: oah_command == "reset"
+
+- include: tasks/oah-validate.yml
+  when: oah_command == "validate"
+
+#- include: tasks/oah-{{ oah_command }}.yml
